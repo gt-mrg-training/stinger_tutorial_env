@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stinger_base">
+    <xacro:include filename="$(find stinger_description)/models/stinger_base/components/sensors.xacro"/>
+    <xacro:include filename="$(find stinger_description)/models/stinger_base/components/thrusters.xacro"/>
+
+    <xacro:macro name="stinger_base">
+
+    <link name="hull_link">
+      <inertial>
+        <pose>0.0 0.0 -0.13 0 0 0</pose>
+        <mass value="3"/>
+        <inertia ixx="1.42369" ixy="0" ixz="0" iyy="2.9235025" iyz="0" izz="3.6403125"/>
+      </inertial>
+      <visual name="hull_visual">
+        <origin rpy="0 0 3.1416"/>
+        <geometry>
+          <mesh filename="file://$(find stinger_description)/models/stinger_base/meshes/stinger_hull.dae"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <!-- port hull -->
+    <link name="hull_port_link">
+      <inertial>
+        <mass value="1.0"/>
+        <inertia ixx="0.01" iyy="0.01" izz="0.01"
+                ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+      <collision>
+        <origin xyz="0.095 0.0 0.0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.19 0.081 0.135" />
+        </geometry>
+      </collision>
+      <collision>
+        <origin xyz="-0.095 0.0 0.0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.19 0.081 0.135" />
+        </geometry>
+      </collision>
+    </link>
+    <joint name="hull_port_joint" type="fixed">
+      <origin xyz="0.0 0.0765 -0.035"/>
+      <parent link="hull_link"/>
+      <child link="hull_port_link"/>
+    </joint>
+
+    <!-- starboard hull -->
+    <link name="hull_stbd_link">
+      <inertial>
+        <mass value="1.0"/>
+        <inertia ixx="0.01" iyy="0.01" izz="0.01"
+                ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+      <collision>
+        <origin xyz="0.095 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.19 0.081 0.135" />
+        </geometry>
+      </collision>
+
+      <collision>
+        <origin xyz="-0.095 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.19 0.081 0.135" />
+          </geometry>
+      </collision>
+    </link>
+    <joint name="hull_stbd_joint" type="fixed">
+      <origin xyz="0.0 -0.0765 -0.035"/>
+      <parent link="hull_link"/>
+      <child link="hull_stbd_link"/>
+    </joint>
+
+
+    <!-- Thrusters -->
+    <xacro:prop_macro thruster_id="port">
+      <origin xyz="-0.19 0.073 -0.041" rpy="0 0 0" />
+    </xacro:prop_macro>
+
+    <xacro:prop_macro thruster_id="stbd">
+      <origin xyz="-0.19 -0.073 -0.041" rpy="0 0 0" />
+    </xacro:prop_macro>
+
+    <!-- Sensors -->
+    <xacro:camera_macro camera_id="0">
+      <origin xyz="0.16 0 0.012" rpy="0 0 0" />
+    </xacro:camera_macro>
+
+    <xacro:lidar_macro>
+      <origin xyz="0.1 0 0.1" rpy="0 0 0" />
+    </xacro:lidar_macro>
+
+    <xacro:imu_macro>
+      <origin xyz="-0.05 0 0.025" rpy="3.14 0 0" />
+    </xacro:imu_macro>
+
+    <xacro:gps_macro>
+      <origin xyz="-0.05 0 0.025" rpy="0 0 0" />
+    </xacro:gps_macro>
+
+    <!-- hydrodynamics and control plugins -->
+    <gazebo>
+      <plugin
+        filename="gz-sim-hydrodynamics-system"
+        name="gz::sim::systems::Hydrodynamics">
+        <link_name> base_link </link_name>
+        
+        <!-- Linear Drag -->
+        <xU>-5</xU> <!-- Surge -->
+        <yV>-5</yV> <!-- Sway -->
+        <zW>-5</zW> <!-- Heave -->
+        <kP>-10</kP> <!-- Roll-->
+        <mQ>-5</mQ> <!-- Pitch -->
+        <nR>-5</nR> <!-- Yaw-->
+
+        <xUabsU>-10</xUabsU>
+        <yVabsV>-60</yVabsV>
+        <zWabsW>-60</zWabsW>
+        <kPabsP>-10</kPabsP>
+        <mQabsQ>-60</mQabsQ>
+        <nRabsR>-50</nRabsR>
+      </plugin>
+
+      <!-- Publishes perfect odometry data for ground truth -->
+      <plugin
+        filename="gz-sim-odometry-publisher-system"
+        name="gz::sim::systems::OdometryPublisher">
+        <dimensions>3</dimensions>
+      </plugin>
+    </gazebo>
+
+    </xacro:macro>
+</robot>
